@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -34,36 +35,41 @@ func consultaCepHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func consultaCep(cep string) (model.Cep, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
 	cepChan := make(chan model.Cep)
 
 	go func() {
-		log.Println("Iniciando consulta na ViaCEP")
-		v, err := consultaViaCep(cep)
-		if err != nil {
+		log.Println("Consultando ViaCEP")
+		if result, err := consultaViaCep(cep); err == nil {
+			select {
+			case cepChan <- result:
+			case <-ctx.Done():
+			}
+		} else {
 			log.Println("Erro ViaCEP:", err)
-			return
 		}
-		log.Println("ViaCEP retornou com sucesso")
-		cepChan <- v
 	}()
 
 	go func() {
-		log.Println("Iniciando consulta na BrasilAPI")
-		b, err := consultaBrasilApi(cep)
-		if err != nil {
+		log.Println("Consultando BrasilAPI")
+		if result, err := consultaBrasilApi(cep); err == nil {
+			select {
+			case cepChan <- result:
+			case <-ctx.Done():
+			}
+		} else {
 			log.Println("Erro BrasilAPI:", err)
-			return
 		}
-		log.Println("BrasilAPI retornou com sucesso")
-		cepChan <- b
 	}()
 
 	select {
 	case res := <-cepChan:
-		log.Println("Recebido retorno do canal")
+		log.Println("Resposta recebida")
 		return res, nil
-	case <-time.After(1 * time.Second):
-		log.Println("Timeout após 1 segundo")
+	case <-ctx.Done():
+		log.Println("Timeout atingido")
 		return model.Cep{}, fmt.Errorf("timeout ao consultar CEP")
 	}
 }
