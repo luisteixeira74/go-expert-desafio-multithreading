@@ -1,15 +1,32 @@
-Neste desafio você terá que usar o que aprendemos com Multithreading e APIs para buscar o resultado mais rápido entre duas APIs distintas.
+# Desafio: Multithreading com APIs de CEP
 
-As duas requisições serão feitas simultaneamente para as seguintes APIs:
+Neste desafio, o objetivo é utilizar concorrência em Go (Multithreading) para consultar duas APIs distintas de CEP simultaneamente, retornando a resposta mais rápida.
 
-https://brasilapi.com.br/api/cep/v1/01153000 + cep
+## 🔗 APIs utilizadas:
 
-http://viacep.com.br/ws/" + cep + "/json/
+- [BrasilAPI](https://brasilapi.com.br/api/cep/v1/)
+- [ViaCEP](http://viacep.com.br/ws/)
 
-Os requisitos para este desafio são:
+---
 
-- Acatar a API que entregar a resposta mais rápida e descartar a resposta mais lenta.
+## ✅ Requisitos
 
-- O resultado da request deverá ser exibido no command line com os dados do endereço, bem como qual API a enviou.
+- As duas requisições devem ser feitas simultaneamente.
+- Deve-se retornar apenas a resposta mais rápida, descartando a outra.
+- O resultado deve ser exibido com os dados do endereço e qual API respondeu.
+- O tempo máximo de resposta deve ser **1 segundo**. Após isso, deve-se retornar erro de timeout.
 
-- Limitar o tempo de resposta em 1 segundo. Caso contrário, o erro de timeout deve ser exibido.
+---
+
+## ▶️ Como executar
+
+Clone o projeto e entre na pasta:
+
+```bash
+go run server/main.go
+
+abrir outro bash
+
+```bash
+curl http://localhost:8080/consulta-cep/01153000
+
